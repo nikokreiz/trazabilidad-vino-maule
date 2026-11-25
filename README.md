@@ -14,7 +14,7 @@ orderer Raft, CouchDB) para prevenir el fraude de denominación de origen. Organ
 - `chaincode/`: chaincode `TrazabilidadVino` (JavaScript, fabric-contract-api).
 - `app/`: aplicación cliente (Node.js + fabric-gateway), BD externa SQLite y gateway QR de solo lectura.
 - `scripts/`: red, despliegue del chaincode, pruebas y parches de Org4 para `test-network`.
-- `docs/`: evidencias de ejecución.
+- `docs/`: evidencias de ejecución (`./scripts/evidencias.sh <1-7>` las genera para las capturas).
 
 ## Requisitos
 Linux o Windows con WSL2 (Ubuntu), Docker, Node.js 20, `jq` y Fabric 2.5:
