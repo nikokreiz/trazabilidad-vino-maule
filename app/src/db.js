@@ -65,25 +65,29 @@ function vaciar() {
   abrir().exec("DELETE FROM transacciones; DELETE FROM sqlite_sequence WHERE name='transacciones';");
 }
 
-// Tabla legible para la consola (demo en vivo).
+// Tabla compacta para la consola (demo en vivo).
+const limpiarMotivo = (m) => (m || '').replace(/^chaincode response \d+, /, '');
 function mostrar(filas, titulo) {
-  console.log(`\n-- BD externa (${RUTA}) · ${titulo}`);
+  console.log(`\n-- BD externa (app/datos/app.db) · ${titulo}`);
   if (filas.length === 0) {
     console.log('   (sin registros)');
     return;
   }
-  console.table(filas.map((f) => ({
-    id: f.id,
-    funcion: f.funcion,
-    lote: f.id_lote,
-    invoca: f.org_invoca,
-    endosan: f.endosantes,
-    estado: f.estado,
-    fase: f.fase_rechazo || '',
-    bloque: f.bloque ?? '',
-    tx: f.tx_id ? `${f.tx_id.slice(0, 10)}…` : '',
-    motivo: f.motivo ? f.motivo.slice(0, 60) : '',
-  })));
+  const col = [
+    ['id', 3, (f) => f.id],
+    ['función', 16, (f) => f.funcion.replace('registrar', '')],
+    ['lote', 15, (f) => f.id_lote],
+    ['invoca', 8, (f) => f.org_invoca.replace('MSP', '')],
+    ['endosan', 11, (f) => f.endosantes.replace(/MSP/g, '').replace(/ \+ /g, '+')],
+    ['estado', 10, (f) => f.estado],
+    ['fase', 10, (f) => f.fase_rechazo || ''],
+    ['bloque', 6, (f) => f.bloque ?? ''],
+    ['motivo', 48, (f) => limpiarMotivo(f.motivo)],
+  ];
+  const celda = (v, n) => { const t = String(v); return t.length > n ? `${t.slice(0, n - 1)}…` : t.padEnd(n); };
+  console.log('   ' + col.map(([t, n]) => celda(t, n)).join(' │ '));
+  console.log('   ' + col.map(([, n]) => '─'.repeat(n)).join('─┼─'));
+  for (const f of filas) console.log('   ' + col.map(([, n, g]) => celda(g(f), n)).join(' │ '));
 }
 
 module.exports = { registrarEnvio, marcarConfirmada, marcarRechazada, listar, vaciar, mostrar, RUTA };
