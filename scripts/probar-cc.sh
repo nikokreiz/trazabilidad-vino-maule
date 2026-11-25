@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-source ~/vino/env.sh
+source "$(dirname "$0")/env.sh"
 CC=trazabilidad; CH=vino
 ORD="-o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA"
 puerto() { case $1 in 1) echo 7051;; 2) echo 9051;; 3) echo 11051;; 4) echo 13051;; esac; }

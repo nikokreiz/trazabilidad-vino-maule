@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Demuestra que las políticas de endoso por lote se aplican (state-based endorsement).
-source ~/vino/env.sh
+source "$(dirname "$0")/env.sh"
 CC=trazabilidad; CH=vino
 SUF=$(date +%H%M%S)
 LOTE="POL-$SUF"

@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 # Reinicio limpio de la red de 4 orgs (canal "vino").
 set -u
-cd ~/vino/fabric-samples/test-network || exit 1
+source "$(dirname "$0")/env.sh"
+cd "$NET" || { echo "No existe $NET (defina FABRIC_SAMPLES)"; exit 1; }
+[ -d addOrg4 ] || { echo "Faltan los parches de Org4: ejecute scripts/instalar-parches.sh"; exit 1; }
 
 echo ">> Bajando la red y limpiando restos..."
 ./network.sh down
-docker rm -f $(docker ps -aq) 2>/dev/null
+# Solo contenedores de la red Fabric (no toca otros contenedores del equipo)
+docker rm -f $(docker ps -aq --filter "name=example.com" --filter "name=couchdb" --filter "name=ca_" --filter "name=dev-peer") 2>/dev/null
 docker volume rm $(docker volume ls -q | grep -E "peer0\.org|orderer\.example\.com") 2>/dev/null
 sudo rm -rf addOrg4/fabric-ca/org4/msp addOrg4/fabric-ca/org4/tls-cert.pem \
             addOrg4/fabric-ca/org4/ca-cert.pem addOrg4/fabric-ca/org4/IssuerPublicKey \

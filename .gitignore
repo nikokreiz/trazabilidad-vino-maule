@@ -6,3 +6,10 @@ wallet/
 *.pem
 *.key
 keystore/
+# Artefactos generados por la CA y la red
+fabric-ca-server.db
+IssuerPublicKey
+IssuerRevocationPublicKey
+log.txt
+# Base de datos externa de la aplicación
+*.db

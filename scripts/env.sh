@@ -1,4 +1,11 @@
-export NET=$HOME/vino/fabric-samples/test-network
+# Variables comunes. Uso: source scripts/env.sh
+# FABRIC_SAMPLES apunta a la carpeta fabric-samples (por defecto ~/fabric-samples).
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export REPO_DIR
+export FABRIC_SAMPLES=${FABRIC_SAMPLES:-$HOME/fabric-samples}
+export NET=$FABRIC_SAMPLES/test-network
+export PATH=$FABRIC_SAMPLES/bin:$PATH
+export FABRIC_CFG_PATH=$FABRIC_SAMPLES/config
 export ORDERER_CA=$NET/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
 
 setOrg() {  # uso: setOrg 1|2|3|4

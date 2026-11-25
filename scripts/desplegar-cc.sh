@@ -2,12 +2,12 @@
 # Despliega TrazabilidadVino con las 4 orgs.
 # Uso: ./desplegar-cc.sh [version] [secuencia]   (primera vez: 1.0 1; actualizar: 1.1 2, 1.2 3...)
 set -euo pipefail
-source ~/vino/env.sh
+source "$(dirname "$0")/env.sh"
 
 VERSION=${1:-1.0}
 SEQ=${2:-1}
 CC_NAME=trazabilidad
-CC_PATH=$HOME/vino/trazabilidad-vino/chaincode
+CC_PATH=$REPO_DIR/chaincode
 CH=vino
 POLICY="OR('Org1MSP.peer','Org2MSP.peer','Org3MSP.peer','Org4MSP.peer')"
 ORD="-o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA"
