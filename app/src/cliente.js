@@ -1,6 +1,7 @@
 'use strict';
 // Operaciones del chaincode TrazabilidadVino desde la aplicación cliente.
-const { conectar } = require('./fabric');
+const { conectar, ORGS } = require('./fabric');
+const db = require('./db');
 
 // Organización que invoca y organizaciones que deben endosar cada función
 // (coincide con las políticas del diseño y con el chaincode).
@@ -24,25 +25,44 @@ function mensajeError(e) {
 }
 
 // Envía una transacción y espera su confirmación. Falla si queda INVALIDADA en el bloque.
+// Cada envío queda registrado en la BD externa: PENDIENTE -> CONFIRMADA | RECHAZADA.
 async function enviar(orgNum, funcion, args, endosan) {
   const config = ENDOSO[funcion];
   if (!config) throw new Error(`Función desconocida: ${funcion}`);
   const orgs = endosan || config.endosan;
   const c = conectar(orgNum);
+  let idRegistro;
   try {
     const propuesta = c.contract.newProposal(funcion, {
       arguments: args.map(String),
       endorsingOrganizations: orgs,
     });
-    const transaccion = await propuesta.endorse();          // 1. execute: los peers simulan y firman
+    idRegistro = db.registrarEnvio({
+      funcion,
+      idLote: String(args[0]),
+      orgInvoca: ORGS[orgNum].msp,
+      endosantes: orgs,
+      txId: propuesta.getTransactionId(),
+    });
+
+    let transaccion;
+    try {
+      transaccion = await propuesta.endorse();              // 1. execute: los peers simulan y firman
+    } catch (e) {
+      db.marcarRechazada(idRegistro, { fase: 'ENDOSO', motivo: mensajeError(e) });
+      throw e;
+    }
     const resultado = Buffer.from(transaccion.getResult()).toString('utf8');
     const enviada = await transaccion.submit();             // 2. order: se envía al orderer
     const estado = await enviada.getStatus();               // 3. validate: espera la validación del bloque
+    const bloque = Number(estado.blockNumber);
     if (!estado.successful) {
       const motivo = CODIGOS_INVALIDEZ[estado.code] || `código ${estado.code}`;
-      throw new Error(`Transacción ${estado.transactionId.slice(0, 12)}… INVALIDADA en el bloque ${estado.blockNumber}: ${motivo}`);
+      db.marcarRechazada(idRegistro, { fase: 'VALIDACION', motivo, txId: estado.transactionId, bloque });
+      throw new Error(`Transacción ${estado.transactionId.slice(0, 12)}… INVALIDADA en el bloque ${bloque}: ${motivo}`);
     }
-    return { txId: estado.transactionId, bloque: Number(estado.blockNumber), resultado: JSON.parse(resultado) };
+    db.marcarConfirmada(idRegistro, { txId: estado.transactionId, bloque });
+    return { txId: estado.transactionId, bloque, resultado: JSON.parse(resultado) };
   } finally {
     c.close();
   }

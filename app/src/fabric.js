@@ -7,7 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 
-const NET = process.env.FABRIC_NET || path.join(os.homedir(), 'vino', 'fabric-samples', 'test-network');
+const NET = process.env.FABRIC_NET || path.join(process.env.FABRIC_SAMPLES || path.join(os.homedir(), 'fabric-samples'), 'test-network');
 const CANAL = process.env.CANAL || 'vino';
 const CHAINCODE = process.env.CHAINCODE || 'trazabilidad';
 
